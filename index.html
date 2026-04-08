@@ -1,0 +1,52 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- IMPORTANT: Replace with your actual Google Client ID -->
+    <meta name="google-signin-client_id" content="%VITE_GOOGLE_CLIENT_ID%">
+    <title>TechStream AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'primary': '#FFDE59',
+              'secondary': '#FFFFFF',
+              'input': '#F3F4F6',
+              'accent': '#F43F8A', // magenta
+              'accent-hover': '#D73779',
+              'accent2': '#1ECBEB', // teal
+              'accent2-hover': '#1AB0CF',
+              'text-primary': '#2F2F2F',
+              'text-secondary': '#6B7280',
+              'border-color': '#E5E7EB',
+              'error': '#EF4444',
+              'error-bg': '#FEE2E2',
+              'error-border': '#FCA5A5',
+            }
+          }
+        }
+      }
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.1"
+  }
+}
+</script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-primary text-text-primary">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

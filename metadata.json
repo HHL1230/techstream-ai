@@ -1,0 +1,5 @@
+{
+  "name": "TechStream AI",
+  "description": "A sleek, Techmeme-inspired news aggregator that fetches the latest articles from top US tech RSS feeds. Each article features AI-powered summarization, a like button, and a dedicated comment section for user engagement.",
+  "requestFramePermissions": []
+}
