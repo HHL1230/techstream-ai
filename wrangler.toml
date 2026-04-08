@@ -6,5 +6,3 @@ pages_build_output_dir = "dist"
 # 這裡放置非機密的環境變數
 # API_KEY 請在 Cloudflare 儀表板中的 Settings -> Environment variables -> Production/Preview 設定為 Secret
 
-[build]
-command = "npm run build"
