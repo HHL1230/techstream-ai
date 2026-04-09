@@ -9,7 +9,7 @@ const USER_PROFILE_KEY = 'techstream_user_profile';
 
 const fetchGet = async (key: string): Promise<any> => {
   try {
-    const res = await fetch(`/api/storage/${key}`);
+    const res = await fetch(`/api/storage/${key}?_t=${Date.now()}`);
     if (!res.ok) return null;
     return await res.json();
   } catch (error) {
@@ -102,7 +102,7 @@ export const setNewsDataForDate = async (dateKey: string, data: DailyNewsData): 
 
 export const getArchivedDates = async (): Promise<string[]> => {
     try {
-        const res = await fetch(`/api/storage?prefix=${ARTICLES_PREFIX}`);
+        const res = await fetch(`/api/storage?prefix=${ARTICLES_PREFIX}&_t=${Date.now()}`);
         if (!res.ok) return [];
         const keys: string[] = await res.json();
         
