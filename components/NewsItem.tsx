@@ -17,8 +17,8 @@ const ImagePlaceholder: React.FC = () => (
 );
 
 export const NewsItem: React.FC<NewsItemProps> = ({ article, canTranslate }) => {
-  const [likes, setLikes] = useState(() => storageManager.getLikes(article.id));
-  const [comments, setComments] = useState<Comment[]>(() => storageManager.getComments(article.id));
+  const [likes, setLikes] = useState(0);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [showComments, setShowComments] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [summary, setSummary] = useState<string | null>(null);
@@ -28,10 +28,19 @@ export const NewsItem: React.FC<NewsItemProps> = ({ article, canTranslate }) => 
   const itemRef = useRef<HTMLDivElement>(null);
 
   // New state management for on-demand translation
-  const [translation, setTranslation] = useState<Translation | null>(() => storageManager.getTranslation(article.id));
+  const [translation, setTranslation] = useState<Translation | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
   const [translationError, setTranslationError] = useState<string | null>(null);
-  const [showTranslation, setShowTranslation] = useState(!!storageManager.getTranslation(article.id));
+  const [showTranslation, setShowTranslation] = useState(false);
+
+  useEffect(() => {
+    storageManager.getLikes(article.id).then(setLikes);
+    storageManager.getComments(article.id).then(setComments);
+    storageManager.getTranslation(article.id).then(t => {
+      setTranslation(t);
+      if (t) setShowTranslation(true);
+    });
+  }, [article.id]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(

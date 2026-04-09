@@ -7,132 +7,109 @@ const TRANSLATION_PREFIX = 'techstream_translation_';
 const ARTICLES_PREFIX = 'techstream_articles_';
 const USER_PROFILE_KEY = 'techstream_user_profile';
 
-// User Profile Management
-export const setUserProfile = (profile: UserProfile): void => {
+const fetchGet = async (key: string): Promise<any> => {
   try {
-    localStorage.setItem(USER_PROFILE_KEY, JSON.stringify(profile));
+    const res = await fetch(`/api/storage/${key}`);
+    if (!res.ok) return null;
+    return await res.json();
   } catch (error) {
-    console.error("Failed to set user profile in localStorage", error);
-  }
-};
-
-export const getUserProfile = (): UserProfile | null => {
-  try {
-    const storedProfile = localStorage.getItem(USER_PROFILE_KEY);
-    return storedProfile ? JSON.parse(storedProfile) : null;
-  } catch (error) {
-    console.error("Failed to get user profile from localStorage", error);
+    console.error(`Error fetching ${key}:`, error);
     return null;
   }
 };
 
-export const removeUserProfile = (): void => {
+const fetchPut = async (key: string, value: any): Promise<void> => {
   try {
-    localStorage.removeItem(USER_PROFILE_KEY);
+    await fetch(`/api/storage/${key}`, {
+      method: "PUT",
+      body: JSON.stringify(value)
+    });
   } catch (error) {
-    console.error("Failed to remove user profile from localStorage", error);
+    console.error(`Error putting ${key}:`, error);
   }
 };
 
+const fetchDelete = async (key: string): Promise<void> => {
+  try {
+    await fetch(`/api/storage/${key}`, {
+      method: "DELETE"
+    });
+  } catch (error) {
+    console.error(`Error deleting ${key}:`, error);
+  }
+};
+
+// User Profile Management
+export const setUserProfile = async (profile: UserProfile): Promise<void> => {
+  await fetchPut(USER_PROFILE_KEY, profile);
+};
+
+export const getUserProfile = async (): Promise<UserProfile | null> => {
+  return await fetchGet(USER_PROFILE_KEY);
+};
+
+export const removeUserProfile = async (): Promise<void> => {
+  await fetchDelete(USER_PROFILE_KEY);
+};
 
 // Likes Management
-export const getLikes = (articleId: string): number => {
-  try {
-    const storedLikes = localStorage.getItem(`${LIKES_PREFIX}${articleId}`);
-    return storedLikes ? parseInt(storedLikes, 10) : 0;
-  } catch (error) {
-    console.error("Failed to get likes from localStorage", error);
-    return 0;
-  }
+export const getLikes = async (articleId: string): Promise<number> => {
+  const likes = await fetchGet(`${LIKES_PREFIX}${articleId}`);
+  return typeof likes === 'number' ? likes : 0;
 };
 
-export const setLikes = (articleId: string, likes: number): void => {
-  try {
-    localStorage.setItem(`${LIKES_PREFIX}${articleId}`, likes.toString());
-  } catch (error) {
-    console.error("Failed to set likes in localStorage", error);
-  }
+export const setLikes = async (articleId: string, likes: number): Promise<void> => {
+  await fetchPut(`${LIKES_PREFIX}${articleId}`, likes);
 };
 
 // Comments Management
-export const getComments = (articleId: string): Comment[] => {
-  try {
-    const storedComments = localStorage.getItem(`${COMMENTS_PREFIX}${articleId}`);
-    return storedComments ? JSON.parse(storedComments) : [];
-  } catch (error) {
-    console.error("Failed to get comments from localStorage", error);
-    return [];
-  }
+export const getComments = async (articleId: string): Promise<Comment[]> => {
+  const comments = await fetchGet(`${COMMENTS_PREFIX}${articleId}`);
+  return Array.isArray(comments) ? comments : [];
 };
 
-export const setComments = (articleId: string, comments: Comment[]): void => {
-  try {
-    localStorage.setItem(`${COMMENTS_PREFIX}${articleId}`, JSON.stringify(comments));
-  } catch (error) {
-    console.error("Failed to set comments in localStorage", error);
-  }
+export const setComments = async (articleId: string, comments: Comment[]): Promise<void> => {
+  await fetchPut(`${COMMENTS_PREFIX}${articleId}`, comments);
 };
 
 // Translation Management
-export const getTranslation = (articleId: string): Translation | null => {
-  try {
-    const storedTranslation = localStorage.getItem(`${TRANSLATION_PREFIX}${articleId}`);
-    return storedTranslation ? JSON.parse(storedTranslation) : null;
-  } catch (error) {
-    console.error("Failed to get translation from localStorage", error);
-    return null;
-  }
+export const getTranslation = async (articleId: string): Promise<Translation | null> => {
+  return await fetchGet(`${TRANSLATION_PREFIX}${articleId}`);
 };
 
-export const setTranslation = (articleId: string, translation: Translation): void => {
-  try {
-    localStorage.setItem(`${TRANSLATION_PREFIX}${articleId}`, JSON.stringify(translation));
-  } catch (error) {
-    console.error("Failed to set translation in localStorage", error);
-  }
+export const setTranslation = async (articleId: string, translation: Translation): Promise<void> => {
+  await fetchPut(`${TRANSLATION_PREFIX}${articleId}`, translation);
 };
 
 // Article & RSS Caching Management
-export const getNewsDataForDate = (dateKey: string): DailyNewsData | null => {
-    try {
-        const storedData = localStorage.getItem(`${ARTICLES_PREFIX}${dateKey}`);
-        if (!storedData) return null;
-        
-        const parsedData = JSON.parse(storedData);
-
-        // Backward compatibility for old format (which was just an object of articles)
-        if (Array.isArray(parsedData)) {
-            return {
-                articles: parsedData,
-                rawFeeds: {}
-            };
-        }
-
-        return parsedData as DailyNewsData;
-    } catch (error) {
-        console.error("Failed to get news data from localStorage", error);
-        return null;
+export const getNewsDataForDate = async (dateKey: string): Promise<DailyNewsData | null> => {
+    const parsedData = await fetchGet(`${ARTICLES_PREFIX}${dateKey}`);
+    if (!parsedData) return null;
+    
+    // Backward compatibility for old format
+    if (Array.isArray(parsedData)) {
+        return {
+            articles: parsedData,
+            rawFeeds: {}
+        };
     }
+    return parsedData as DailyNewsData;
 };
 
-export const setNewsDataForDate = (dateKey: string, data: DailyNewsData): void => {
-    try {
-        localStorage.setItem(`${ARTICLES_PREFIX}${dateKey}`, JSON.stringify(data));
-    } catch (error) {
-        console.error("Failed to set news data in localStorage", error);
-    }
+export const setNewsDataForDate = async (dateKey: string, data: DailyNewsData): Promise<void> => {
+    await fetchPut(`${ARTICLES_PREFIX}${dateKey}`, data);
 };
 
-export const getArchivedDates = (): string[] => {
+export const getArchivedDates = async (): Promise<string[]> => {
     try {
-        const keys = Object.keys(localStorage)
-            .filter(key => key.startsWith(ARTICLES_PREFIX))
-            .map(key => key.replace(ARTICLES_PREFIX, ''));
+        const res = await fetch(`/api/storage?prefix=${ARTICLES_PREFIX}`);
+        if (!res.ok) return [];
+        const keys: string[] = await res.json();
         
-        // Sort dates descending (newest first)
-        return keys.sort((a, b) => b.localeCompare(a));
+        return keys.map(key => key.replace(ARTICLES_PREFIX, ''))
+            .sort((a, b) => b.localeCompare(a));
     } catch (error) {
-        console.error("Failed to get archived dates from localStorage", error);
+        console.error("Failed to get archived dates", error);
         return [];
     }
 };

@@ -6,3 +6,7 @@ pages_build_output_dir = "dist"
 # 這裡放置非機密的環境變數
 # API_KEY 請在 Cloudflare 儀表板中的 Settings -> Environment variables -> Production/Preview 設定為 Secret
 
+[[d1_databases]]
+binding = "DB" # i.e. available in your Worker on env.DB
+database_name = "techstream-ai-db"
+database_id = "eb3a5a71-24c5-4456-b284-96564f8675c3"

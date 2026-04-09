@@ -90,10 +90,11 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const savedUser = storageManager.getUserProfile();
-    if (savedUser) {
-        setUser(savedUser);
-    }
+    storageManager.getUserProfile().then(savedUser => {
+      if (savedUser) {
+          setUser(savedUser);
+      }
+    });
   }, []);
 
   const generateAndCacheSummary = useCallback(async (dateKey: string, feeds: Record<string, string>) => {
@@ -102,9 +103,9 @@ const App: React.FC = () => {
     try {
         const generatedSummary = await generateComprehensiveSummary(feeds);
         setSummary(generatedSummary);
-        const currentData = storageManager.getNewsDataForDate(dateKey);
+        const currentData = await storageManager.getNewsDataForDate(dateKey);
         if (currentData) {
-            storageManager.setNewsDataForDate(dateKey, { ...currentData, summary: generatedSummary });
+            await storageManager.setNewsDataForDate(dateKey, { ...currentData, summary: generatedSummary });
         }
     } catch (err: any) {
         console.error("Failed to generate summary", err);
@@ -138,7 +139,7 @@ const App: React.FC = () => {
       setIsGeneratingSummary(false);
       setSummaryError(null);
       
-      const cachedData = forceRefresh ? null : storageManager.getNewsDataForDate(dateKey);
+      const cachedData = forceRefresh ? null : await storageManager.getNewsDataForDate(dateKey);
       
       if (cachedData && cachedData.articles.length > 0) {
           setArticles(cachedData.articles);
@@ -166,8 +167,8 @@ const App: React.FC = () => {
               }));
               setArticles(articlesWithIds);
               setRawFeeds(fetchedRawFeeds);
-              storageManager.setNewsDataForDate(dateKey, { articles: articlesWithIds, rawFeeds: fetchedRawFeeds, summary: null });
-              setArchivedDates(storageManager.getArchivedDates());
+              await storageManager.setNewsDataForDate(dateKey, { articles: articlesWithIds, rawFeeds: fetchedRawFeeds, summary: null });
+              setArchivedDates(await storageManager.getArchivedDates());
               generateAndCacheSummary(dateKey, fetchedRawFeeds);
           } catch (err) {
               console.error(err);
@@ -183,14 +184,16 @@ const App: React.FC = () => {
   }, [generateAndCacheSummary]);
 
   useEffect(() => {
-    setArchivedDates(storageManager.getArchivedDates());
+    storageManager.getArchivedDates().then(setArchivedDates);
     loadArticlesForDate(getTodayDateKey());
   }, [loadArticlesForDate]);
 
   useEffect(() => {
     if (articles.length > 0 && selectedDate) {
-      const currentData = storageManager.getNewsDataForDate(selectedDate) || { articles: [], rawFeeds: {} };
-      storageManager.setNewsDataForDate(selectedDate, { ...currentData, articles, rawFeeds });
+      storageManager.getNewsDataForDate(selectedDate).then(currentData => {
+        const dataToSave = currentData || { articles: [], rawFeeds: {} };
+        storageManager.setNewsDataForDate(selectedDate, { ...dataToSave, articles, rawFeeds });
+      });
     }
   }, [articles, rawFeeds, selectedDate]);
 
