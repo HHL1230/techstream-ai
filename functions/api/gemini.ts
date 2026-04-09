@@ -173,8 +173,12 @@ export async function onRequestPost({ request, env }) {
     }
   } catch (error) {
     console.error("Error in gemini endpoint:", error);
+    
+    // 檢查是否為 429 或 Quota 相關錯
+    const status = (error.message && (error.message.includes('429') || error.message.includes('RESOURCE_EXHAUSTED'))) ? 429 : 500;
+    
     return new Response(JSON.stringify({ error: error.message || "Internal Error" }), {
-      status: 500,
+      status: status,
       headers: { "Content-Type": "application/json" }
     });
   }
